@@ -1,0 +1,13 @@
+[app]
+172.30.30.201
+172.30.30.202
+
+[db]
+172.30.30.203
+
+[wszystko:children]
+app
+db
+
+[wszystko:vars]
+ansible_ssh_user=kamil
