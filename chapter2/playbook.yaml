@@ -1,0 +1,13 @@
+- name: Set up NTP on all servers.
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure NTP deamon is installed
+      ansible.builtin.apt:
+        name: systemd-timesyncd
+        state: present
+    - name: Ensure NTP service is running
+      ansible.builtin.service:
+        name: systemd-timesyncd
+        state: started
+        enabled: true
