@@ -1,0 +1,58 @@
+---
+- name: Install solr server
+  hosts: solr
+  become: true
+
+  vars_files:
+    - vars.yaml
+
+  pre_tasks:
+    - name: Update cache if needed
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+  handlers:
+    - name: Restart solr
+      ansible.builtin.service:
+        name: solr
+        state: restarted
+
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - openjdk-17-jdk
+          - unzip
+          - tar
+        state: present
+
+    - name: Download solr
+      ansible.builtin.get_url:
+        url: "https://downloads.apache.org/solr/solr/{{ solr_version }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        mode: "0755"
+
+    - name: Expand solr
+      ansible.builtin.unarchive:
+        src: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ download_dir }}"
+        remote_src: true
+        creates: "{{ download_dir }}/solr-{{ solr_version }}"
+
+    - name: Run solr instalation script
+      ansible.builtin.command: >
+        {{ download_dir }}/solr-{{ solr_version }}/bin/install_solr_service.sh
+        {{ download_dir }}/solr-{{ solr_version }}.tgz
+        -i /opt
+        -d /var/solr
+        -u solr
+        -s solr
+        -p 8983
+        creates={{ solr_dir }}/bin/solr
+
+    - name: Ensure solr is started and enabled
+      ansible.builtin.service:
+        name: solr
+        state: started
+        enabled: true
