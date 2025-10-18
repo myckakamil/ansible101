@@ -1,0 +1,35 @@
+---
+- name: Install Apache
+  hosts: app
+  become: true
+
+  tasks:
+    - name: Install apache2
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+    - name: Copy config file
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: "0644"
+      with_items:
+        - src: apache2.conf
+          dest: /etc/apache2/apache2.conf
+        - src: apache2-vhosts.conf
+          dest: /etc/apache2/sites-available/htpd-vhosts.conf
+    - name: Enable site
+      ansible.builtin.file:
+        src: /etc/apache2/sites-available/htpd-vhosts.conf
+        dest: /etc/apache2/sites-enabled/htpd-vhosts.conf
+        owner: root
+        group: root
+        mode: "0644"
+        state: link
+    - name: Make sure Apache is started
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true

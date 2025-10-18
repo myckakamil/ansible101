@@ -1,0 +1,5 @@
+[app]
+172.30.30.201
+
+[app:vars]
+ansible_ssh_user=kamil
